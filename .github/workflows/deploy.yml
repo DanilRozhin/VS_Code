@@ -1,32 +1,3 @@
-# name: Bad CI/CD file
-
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-
-#       - name: Install deps
-#         run: npm ci
-
-#       - name: Test
-#         run: npm run test
-
-#       - name: Build
-#         run: npm run build
-
-#       - name: Deploying
-#         run: ./deploy.sh
-
 name: Genius CI/CD file
 on:
   push:
