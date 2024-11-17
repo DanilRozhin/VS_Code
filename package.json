@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"All fine\""
+    "test": "echo All fine",
+    "build": "echo Good build"
   },
   "author": "",
   "license": "ISC",
