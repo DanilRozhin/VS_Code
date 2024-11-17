@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo All fine",
-    "build": "echo Good build",
-    "./deploy.sh": "echo Awesome"
+    "build": "echo Good build"
   },
   "author": "",
   "license": "ISC",
