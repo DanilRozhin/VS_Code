@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         version: [14, 16, 18]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -46,21 +46,31 @@ jobs:
       - run: echo "test job done"
   build:
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
         run: npm run build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist
       - run: echo "build job done"
   deploy:
     needs: [build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Build
-        run: npm run build
+      # - name: Build
+      #   run: npm run build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist
       - name: Deploying
         run: ./deploy.sh
       - run: echo "deploy job done"
