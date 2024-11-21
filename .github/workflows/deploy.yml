@@ -3,22 +3,18 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
         run: npm ci
-      # - name: Cache deps
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/.npm
-      #     key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-npm-
       - name: Lint
         run: npm run lint
       - run: echo "lint job done"
@@ -42,7 +38,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Test
-        run: npm run test -- -- timeout=4000
+        run: npm run test
       - run: echo "test job done"
   build:
     needs: [test]
