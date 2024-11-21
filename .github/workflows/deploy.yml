@@ -70,6 +70,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+      - name: Checking
+        run: ls -R
       - name: Deploying
         run: ./deploy.sh
       - run: echo "deploy job done"
