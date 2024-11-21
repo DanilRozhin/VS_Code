@@ -44,7 +44,7 @@ jobs:
       - name: Test
         run: npm run test -- --timeout=4000
       - run: echo "test job done"
-  build:
+  build_deploy:
     needs: [test]
     runs-on: ubuntu-22.04
     steps:
@@ -52,29 +52,40 @@ jobs:
         uses: actions/checkout@v3
       - name: Build
         run: npm run build
-      - run: sudo mkdir -p /dist
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./dist
-      - run: echo "build job done"
-  deploy:
-    needs: [build]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      # - name: Build
-      #   run: npm run build
-      - name: Checking
-        run: ls -R
-      - name: Debug artifacts
-        run: ls -la ./dist      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
       - name: Deploying
         run: ./deploy.sh
-      - run: echo "deploy job done"
+      - run: echo "that's all"
+  # build:
+  #   needs: [test]
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Build
+  #       run: npm run build
+  #     - run: sudo mkdir -p /dist
+  #     - name: Upload build artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: build-artifacts
+  #         path: ./dist
+  #     - run: echo "build job done"
+  # deploy:
+  #   needs: [build]
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     # - name: Build
+  #     #   run: npm run build
+  #     - name: Checking
+  #       run: ls -R
+  #     - name: Debug artifacts
+  #       run: ls -la ./dist      
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: build-artifacts
+  #     - name: Deploying
+  #       run: ./deploy.sh
+  #     - run: echo "deploy job done"
