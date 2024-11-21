@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: ./anyfile.py
+          path: arti.txt
       - run: echo "build job done"
   deploy:
     needs: [build]
@@ -72,7 +72,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: ./anyfile.py
+          path: arti.txt
       - name: Deploying
         run: ./deploy.sh
       - run: echo "deploy job done"
