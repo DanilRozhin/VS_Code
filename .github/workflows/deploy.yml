@@ -58,7 +58,10 @@
 
 name: Export Secrets to Doppler
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   export-to-doppler:
