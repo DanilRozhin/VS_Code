@@ -1,57 +1,94 @@
-name: Genius CI/CD file
-on:
-  push:
-    branches:
-      - main
+# name: Genius CI/CD file
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   lint:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#       - name: Install deps
+#         run: npm ci
+#       - name: Cache deps
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-npm-
+#       - name: Lint
+#         run: npm run lint
+#       - run: echo "lint job done"
+#   test:
+#     needs: [lint]
+#     strategy:
+#       matrix:
+#         version: [14, 16, 18]
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#       - uses: actions/setup-node@v3
+#         with:
+#           node-version: ${{ matrix.version }}
+#       - name: Cache deps
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-npm-
+#       - name: Test
+#         run: npm run test -- --timeout=4000
+#       - run: echo "test job done"
+#   build_deploy:
+#     needs: [test]
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#       - name: Build
+#         run: npm run build
+#       - name: Deploying
+#         run: ./deploy.sh
+#       - run: echo "that's all"
+
+
+name: CI/CD with Secrets
+
+on: [ push ]
 
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: windows-latest
+
     steps:
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: http://127.0.0.1:8200
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            secret/data/ci/keys firstKey | FIRST_SECRET_KEY ;
+            secret/data/ci/keys secondKey | SECOND_SECRET_KEY ;
+
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+
       - name: Install deps
-        run: npm ci
-      - name: Cache deps
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-      - name: Lint
-        run: npm run lint
-      - run: echo "lint job done"
-  test:
-    needs: [lint]
-    strategy:
-      matrix:
-        version: [14, 16, 18]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.version }}
-      - name: Cache deps
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-      - name: Test
-        run: npm run test -- --timeout=4000
-      - run: echo "test job done"
-  build_deploy:
-    needs: [test]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build
-        run: npm run build
-      - name: Deploying
-        run: ./deploy.sh
-      - run: echo "that's all"
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          pytest --api ${{ steps.import-secrets.outputs.FIRST_SECRET_KEY }} --pswd ${{ steps.import-secrets.outputs.SECOND_SECRET_KEY }}
