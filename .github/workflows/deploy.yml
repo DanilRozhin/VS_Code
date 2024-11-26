@@ -56,23 +56,45 @@
 #         run: ./deploy.sh
 #       - run: echo "that's all"
 
-name: CI/CD with Doppler Secrets
+name: build
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  use-doppler-secrets:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Login to Doppler
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setup Doppler
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
-          doppler login --token $DOPPLER_TOKEN
+          doppler setup --project devops_lab --config dev_personal
+          doppler secrets download --no-file --format env > .doppler.env
+          source .doppler.env
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          npm ci --ignore-scripts  
+
+      - name: Run tests
+        run: python -m unittest discover tests
+
+      - name: Deploy
+        run: |
+          rsync -avz --delete dist/ ${SSH_USER}@${SERVER_HOST}:${DEPLOY_PATH}
+        env:
+          SECRET_KEY: ${{ env.SECRET_KEY }}
