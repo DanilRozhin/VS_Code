@@ -81,7 +81,7 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
-          sudo doppler setup --project devops_lab --config dev_personal
+          sudo doppler setup --project test-project --config github
           sudo doppler secrets download --no-file --format env > .doppler.env
           source .doppler.env
 
