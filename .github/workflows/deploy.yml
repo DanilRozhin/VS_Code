@@ -56,7 +56,7 @@
 #         run: ./deploy.sh
 #       - run: echo "that's all"
 
-name: Export Secrets to Doppler
+name: CI/CD with Doppler Secrets
 
 on:
   push:
@@ -64,17 +64,15 @@ on:
       - main
 
 jobs:
-  export-to-doppler:
-    runs-on: ubuntu-latest
-    name: export GitHub secrets to Doppler
+  use-doppler-secrets:
+    runs-on: ubuntu-22.04
+
     steps:
-    - name: Install Doppler CLI
-      uses: dopplerhq/cli-action@v3
-    - name: Upload Secrets to Doppler
-      run: doppler secrets upload --project "$test-project" --config "$DOPPLER_TARGET_CONFIG"  --silent <(echo "$GITHUB_SECRETS" | jq 'del(.github_token, .DOPPLER_TOKEN, .DOPPLER_TARGET_PROJECT, .DOPPLER_TARGET_CONFIG) | with_entries( .key |= ascii_upcase )')
-      shell: bash
-      env:
-        DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-        DOPPLER_TARGET_PROJECT: ${{ secrets.DOPPLER_TARGET_PROJECT }}
-        DOPPLER_TARGET_CONFIG: ${{ secrets.DOPPLER_TARGET_CONFIG }}
-        GITHUB_SECRETS: ${{ toJson(secrets) }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          doppler login --token $DOPPLER_TOKEN
