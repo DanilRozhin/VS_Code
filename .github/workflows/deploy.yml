@@ -56,43 +56,22 @@
 #         run: ./deploy.sh
 #       - run: echo "that's all"
 
-name: Secrets_pipeline
+name: Export Secrets to Doppler
 
-on:
-  push:
-    branches: ["main"]
+on: workflow_dispatch
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-
+  export-to-doppler:
+    runs-on: ubuntu-latest
+    name: export GitHub secrets to Doppler
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-
-      - name: Setup Doppler
-        env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-        run: |
-          doppler setup --project devops_lab --config dev_personal
-          doppler secrets download --no-file --format env > .doppler.env
-          source .doppler.env
-
-      - name: Install dependencies
-        run: |
-          pip install --no-cache-dir -r requirements.txt
-          npm ci --ignore-scripts  
-
-      - name: Run tests
-        run: npm run test
-
-      - name: Deploy
-        run: |
-          rsync -avz --delete dist/ ${SSH_USER}@${SERVER_HOST}:${DEPLOY_PATH}
-        env:
-          SECRET_KEY: ${{ env.SECRET_KEY }}
+    - name: Install Doppler CLI
+      uses: dopplerhq/cli-action@v3
+    - name: Upload Secrets to Doppler
+      run: doppler secrets upload --project "$test-project" --config "$DOPPLER_TARGET_CONFIG"  --silent <(echo "$GITHUB_SECRETS" | jq 'del(.github_token, .DOPPLER_TOKEN, .DOPPLER_TARGET_PROJECT, .DOPPLER_TARGET_CONFIG) | with_entries( .key |= ascii_upcase )')
+      shell: bash
+      env:
+        DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        DOPPLER_TARGET_PROJECT: ${{ secrets.DOPPLER_TARGET_PROJECT }}
+        DOPPLER_TARGET_CONFIG: ${{ secrets.DOPPLER_TARGET_CONFIG }}
+        GITHUB_SECRETS: ${{ toJson(secrets) }}
