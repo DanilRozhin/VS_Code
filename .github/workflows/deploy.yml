@@ -56,39 +56,43 @@
 #         run: ./deploy.sh
 #       - run: echo "that's all"
 
+name: Secrets_pipeline
 
-name: CI/CD with Secrets
-
-on: [ push ]
+on:
+  push:
+    branches: ["main"]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Import Secrets
-        id: import-secrets
-        uses: hashicorp/vault-action@v2
-        with:
-          url: http://127.0.0.1:8200
-          token: ${{ secrets.VAULT_TOKEN }}
-          secrets: |
-            secret/data/ci/keys firstKey | FIRST_SECRET_KEY ;
-            secret/data/ci/keys secondKey | SECOND_SECRET_KEY ;
-
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
-      - name: Install deps
+      - name: Setup Doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest
+          doppler setup --project devops_lab --config dev_personal
+          doppler secrets download --no-file --format env > .doppler.env
+          source .doppler.env
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          npm ci --ignore-scripts  
 
       - name: Run tests
+        run: npm run test
+
+      - name: Deploy
         run: |
-          pytest --api ${{ steps.import-secrets.outputs.FIRST_SECRET_KEY }} --pswd ${{ steps.import-secrets.outputs.SECOND_SECRET_KEY }}
+          rsync -avz --delete dist/ ${SSH_USER}@${SERVER_HOST}:${DEPLOY_PATH}
+        env:
+          SECRET_KEY: ${{ env.SECRET_KEY }}
