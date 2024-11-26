@@ -5,8 +5,7 @@
   "scripts": {
     "test": "echo All fine",
     "build": "echo Good build",
-    "lint": "echo Lint done",
-    "pytest": "echo Some pytests"
+    "lint": "echo Lint done"
   },
   "author": "",
   "license": "ISC",
