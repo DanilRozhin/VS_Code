@@ -78,4 +78,3 @@ jobs:
         DOPPLER_PROJECT: ${{ secrets.DOPPLER_TARGET_PROJECT }}
         DOPPLER_CONFIG: ${{ secrets.DOPPLER_TARGET_CONFIG }}
         GITHUB_SECRETS: ${{ toJson(secrets) }}
-        
