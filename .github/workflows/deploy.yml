@@ -89,7 +89,7 @@ jobs:
         pip install pytest
     - name: Run tests
       run: |
-          pytest --api $FIRST_SECRET_KEY --pswd $SECOND_SECRET_KEY
+          pytest
       env:
-        FIRST_SECRET_KEY: ${{ env.FIRST_SECRET_KEY }}
-        SECOND_SECRET_KEY: ${{ env.SECOND_SECRET_KEY }}
+        TEST_SECRET_1: ${{ env.TEST_SECRET_1 }}
+        TEST_SECRET_2: ${{ env.TEST_SECRET_2 }}
