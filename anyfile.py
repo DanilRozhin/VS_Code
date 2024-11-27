@@ -1,1 +1,2 @@
-print("Good yaml")
+def test_dummy():
+    pass
